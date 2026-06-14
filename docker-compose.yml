@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+
+  # ── PostgreSQL Database ─────────────────────────
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: inventorypulse
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d inventorypulse"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── FastAPI Backend ─────────────────────────────
+  api:
+    build:
+      context: ./inventorypulse-backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: ./inventorypulse-backend/.env
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "8000"   # only reachable inside Docker network (Nginx proxies to it)
+
+  # ── React Frontend (Nginx) ──────────────────────
+  frontend:
+    build:
+      context: ./inventorypulse-frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "80:80"     # http://localhost  → app
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
