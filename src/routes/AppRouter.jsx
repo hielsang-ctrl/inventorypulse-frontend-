@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Layout from '../components/layout/Layout'
 import Dashboard from '../pages/Dashboard'
 import Login from '../pages/Login'
+import Signup from '../pages/Signup'
 import Products from '../pages/Products'
 import StockIn from '../pages/StockIn'
 import NotFound from '../pages/NotFound'
@@ -27,7 +28,15 @@ function AppRouter() {
 
   return (
     <BrowserRouter>
+
+      
       <Routes>
+
+        {/* SIGNUP */}
+        <Route
+          path="/signup"
+          element={user ? <Navigate to="/" /> : <Signup />}
+        />
 
         {/* LOGIN */}
         <Route
@@ -35,7 +44,7 @@ function AppRouter() {
           element={user ? <Navigate to="/" /> : <Login />}
         />
 
-        {/* PROTECTED APP */}
+        {/* PROTECTED AREA */}
         <Route
           path="/"
           element={
@@ -44,7 +53,6 @@ function AppRouter() {
             </ProtectedRoute>
           }
         >
-
           <Route index element={<Dashboard />} />
           <Route path="products" element={<Products />} />
           <Route path="stock-in" element={<StockIn />} />
@@ -66,12 +74,13 @@ function AppRouter() {
               </RoleRoute>
             }
           />
-
         </Route>
 
+        {/* 404 */}
         <Route path="*" element={<NotFound />} />
 
       </Routes>
+
     </BrowserRouter>
   )
 }

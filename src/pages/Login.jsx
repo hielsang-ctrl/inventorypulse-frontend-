@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useAuthStore from '../store/authStore'
 
@@ -13,31 +13,32 @@ function Login() {
 
   const navigate = useNavigate()
 
+  // redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/')
+    }
+  }, [user, navigate])
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
 
     try {
       await login(email, password)
-      navigate('/')
     } catch (err) {
       alert(err.message)
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
   const handleGoogle = async () => {
     try {
       await loginWithGoogle()
-      navigate('/')
     } catch (err) {
       alert(err.message)
     }
-  }
-
-  if (user) {
-    navigate('/')
   }
 
   return (
@@ -64,12 +65,12 @@ function Login() {
 
         <button
           disabled={loading}
-          className="w-full bg-[#1E3A5F] text-white p-2 rounded"
+          className="w-full bg-[#1E3A5F] text-white p-2 rounded disabled:opacity-50"
         >
-          Login
+          {loading ? 'Logging in...' : 'Login'}
         </button>
 
-        {/* GOOGLE LOGIN BUTTON */}
+      
         <button
           type="button"
           onClick={handleGoogle}
@@ -78,8 +79,15 @@ function Login() {
           Continue with Google
         </button>
 
-      </form>
+        
+        <p
+          className="text-sm mt-4 text-center text-blue-600 cursor-pointer hover:underline"
+          onClick={() => navigate('/signup')}
+        >
+          Don't have an account? Sign up
+        </p>
 
+      </form>
     </div>
   )
 }

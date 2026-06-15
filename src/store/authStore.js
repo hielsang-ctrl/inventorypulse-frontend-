@@ -6,26 +6,28 @@ const useAuthStore = create((set) => ({
   role: null,
   loading: false,
 
+  // EMAIL LOGIN
   login: async (email, password) => {
     const user = await loginUser(email, password)
 
     set({
       user,
-      role: user?.displayName || 'staff'
+      role: user.email === 'admin@inventorypulse.com' ? 'admin' : 'staff'
     })
   },
 
+  // GOOGLE LOGIN
   loginWithGoogle: async () => {
     const user = await loginWithGoogle()
 
     set({
       user,
-      role: user?.displayName || 'staff'
+      role: user.email === 'admin@inventorypulse.com' ? 'admin' : 'staff'
     })
   },
 
-  logout: () => {
-    logoutUser()
+  logout: async () => {
+    await logoutUser()
     set({ user: null, role: null })
   }
 }))
