@@ -1,30 +1,36 @@
-import {
-  signInWithEmailAndPassword,
-  signOut,
-  GoogleAuthProvider,
-  signInWithPopup
-} from 'firebase/auth'
+import { create } from 'zustand'
+import { login as apiLogin } from '../services/api'
 
-import { auth } from './firebase'
+const useAuthStore = create((set) => ({
+  user: null,
+  role: null,
+  token: localStorage.getItem('token') || null,
 
-// Email/Password login
-export const loginUser = async (email, password) => {
-  const userCredential = await signInWithEmailAndPassword(
-    auth,
-    email,
-    password
-  )
-  return userCredential.user
-}
+  // Rehydrate user from token on page load
+  init: () => {
+    const token = localStorage.getItem('token')
+    const role = localStorage.getItem('role')
+    const email = localStorage.getItem('email')
+    if (token && role) {
+      set({ user: { email }, role, token })
+    }
+  },
 
-// Google login
-export const loginWithGoogle = async () => {
-  const provider = new GoogleAuthProvider()
-  const result = await signInWithPopup(auth, provider)
-  return result.user
-}
+  login: async (email, password) => {
+    const data = await apiLogin(email, password)
+    // data = { access_token, token_type, role }
+    localStorage.setItem('token', data.access_token)
+    localStorage.setItem('role', data.role)
+    localStorage.setItem('email', email)
+    set({ user: { email }, role: data.role, token: data.access_token })
+  },
 
-// Logout
-export const logoutUser = async () => {
-  return signOut(auth)
-}
+  logout: () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('role')
+    localStorage.removeItem('email')
+    set({ user: null, role: null, token: null })
+  },
+}))
+
+export default useAuthStore
