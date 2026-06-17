@@ -1,7 +1,7 @@
 // All API calls go through this base URL.
 // In development: proxied by Vite to http://localhost:8000
 // In production (Docker): Nginx proxies /api → http://api:8000
-const BASE_URL = '/api'
+const BASE_URL = import.meta.env.VITE_API_URL || '/api'
 
 function getToken() {
   return localStorage.getItem('token')
